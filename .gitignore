@@ -2,6 +2,7 @@
 .env
 .env.local
 .env.production
+scripts/.env
 
 # Config mit potentiellen Secrets
 config/*
