@@ -1,0 +1,17 @@
+# Secrets
+.env
+.env.local
+.env.production
+
+# Config mit potentiellen Secrets
+config/*
+
+# Aber .env Template tracken
+!.env.example
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/

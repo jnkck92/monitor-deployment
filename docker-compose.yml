@@ -1,0 +1,96 @@
+services:
+
+  frontend:
+    container_name: monitor-frontend
+    image: ghcr.io/jnkck92/monitor-frontend:${FRONTEND_VERSION}
+    restart: unless-stopped
+    ports:
+      - "${BIND_ADDRESS}:${FRONTEND_PORT}:80"
+    networks:
+      - internal
+    #    depends_on:
+    #      backend:
+    #        condition: service_healthy
+    #      gateway:
+    #        condition: service_healthy
+    #    healthcheck:
+    #      test: ["CMD", "curl", "-f", "http://localhost:80"]
+    #      interval: 30s
+    #      timeout: 10s
+    #      retries: 3
+    #      start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE}"
+        max-file: "${LOG_MAX_FILE}"
+    deploy:
+      resources:
+        limits:
+          cpus: '${FRONTEND_CPU_LIMIT}'
+          memory: ${FRONTEND_MEMORY_LIMIT}
+
+  gateway:
+    container_name: monitor-gateway
+    image: ghcr.io/jnkck92/monitor-gateway:${GATEWAY_VERSION}
+    ports:
+      - "${BIND_ADDRESS}:${GATEWAY_PORT}:8082"
+    volumes:
+      - ./config/tenants.yaml:/config/tenants.yaml:ro
+    command: --spring.config.additional-location=file:/config/tenants.yaml
+    restart: unless-stopped
+    networks:
+      - internal
+    #    healthcheck:
+    #      test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
+    #      interval: 30s
+    #      timeout: 10s
+    #      retries: 3
+    #      start_period: 30s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE}"
+        max-file: "${LOG_MAX_FILE}"
+    deploy:
+      resources:
+        limits:
+          cpus: '${GATEWAY_CPU_LIMIT}'
+          memory: ${GATEWAY_MEMORY_LIMIT}
+
+  backend:
+    container_name: monitor-backend
+    image: ghcr.io/jnkck92/monitor-backend:${BACKEND_VERSION}
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      DIVERA_POLL_INTERVAL_MS: ${DIVERA_POLL_INTERVAL_MS}
+      INSTANCE_CONFIG_PATH: ${INSTANCE_CONFIG_PATH}
+      CONFIGURATION_TENANTS: ${CONFIGURATION_TENANTS}
+    volumes:
+      - ./config:/app/config:ro
+    restart: unless-stopped
+    stop_grace_period: 35s
+    networks:
+      - internal
+    #    healthcheck:
+    #      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+    #      interval: 30s
+    #      timeout: 10s
+    #      retries: 3
+    #      start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE}"
+        max-file: "${LOG_MAX_FILE}"
+    deploy:
+      resources:
+        limits:
+          cpus: '${BACKEND_CPU_LIMIT}'
+          memory: ${BACKEND_MEMORY_LIMIT}
+        reservations:
+          memory: ${BACKEND_MEMORY_RESERVATION}
+
+networks:
+  internal:
+    driver: bridge
