@@ -1,4 +1,3 @@
-# deploy.sh
 #!/bin/bash
 set -e
 
@@ -6,5 +5,5 @@ set -e
 source .env
 
 echo "Deploying to $SERVER_HOST..."
-ssh $SERVER_USER@$SERVER_HOST "cd $DEPLOY_PATH && ./scripts/update.sh"
+ssh $SERVER_USER@$SERVER_HOST "cd $DEPLOY_PATH && ./update.sh"
 echo "Deployment complete!"
