@@ -1,4 +1,3 @@
-# update.sh
 #!/bin/bash
 set -e
 
